@@ -25,7 +25,8 @@ settings.
   reliable external prefill contract.
 - Longer selections and notes use the clipboard, keeping large content out of
   browser history URLs. Obsidian displays a warning and copy confirmation before
-  you paste the complete draft manually.
+  you paste the complete draft manually. The provider receives an explicitly
+  empty prompt to clear a previously restored unsent draft.
 
 URL-prefilled text is transmitted to ChatGPT or Claude as soon as the browser
 opens, before you press Send, and may remain in browser or synchronized history.

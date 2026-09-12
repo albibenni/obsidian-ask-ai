@@ -116,7 +116,7 @@ describe("buildChatPlan", () => {
       context,
     });
 
-    expect(plan.url).toBe("https://chatgpt.com/");
+    expect(plan.url).toBe("https://chatgpt.com/?prompt=");
     expect(plan.prefilled).toBe(false);
     expect(plan.transfer).toBe("clipboard-size");
     expect(plan.draft).toContain(context);
@@ -130,7 +130,7 @@ describe("buildChatPlan", () => {
       context: "😀".repeat(MAX_PREFILL_URL_LENGTH / 2),
     });
 
-    expect(plan.url).toBe("https://claude.ai/new");
+    expect(plan.url).toBe("https://claude.ai/new?q=");
     expect(plan.prefilled).toBe(false);
   });
 });

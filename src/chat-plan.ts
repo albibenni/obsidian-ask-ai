@@ -71,11 +71,23 @@ export function buildChatPlan(input: ChatPlanInput): ChatPlan {
   const supportsUrlPrefill =
     input.provider === "chatgpt" || input.provider === "claude";
   return clipboardPlan(
-    resolveBaseUrl(input),
+    supportsUrlPrefill
+      ? resolveEmptyPrefillUrl(input.provider)
+      : resolveBaseUrl(input),
     draft,
     false,
     supportsUrlPrefill ? "clipboard-size" : "clipboard-provider",
   );
+}
+
+function resolveEmptyPrefillUrl(provider: ChatProvider): string {
+  if (provider === "chatgpt") {
+    return `${NEW_CHAT_URLS.chatgpt}?prompt=`;
+  }
+  if (provider === "claude") {
+    return `${NEW_CHAT_URLS.claude}?q=`;
+  }
+  throw new Error("The provider does not support URL prefilling");
 }
 
 function resolveBaseUrl(input: ChatPlanInput): string {
