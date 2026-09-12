@@ -24,7 +24,8 @@ settings.
 - Gemini and custom chat sites use the clipboard because they do not offer a
   reliable external prefill contract.
 - Longer selections and notes use the clipboard, keeping large content out of
-  browser history URLs.
+  browser history URLs. Obsidian displays a warning and copy confirmation before
+  you paste the complete draft manually.
 
 URL-prefilled text is transmitted to ChatGPT or Claude as soon as the browser
 opens, before you press Send, and may remain in browser or synchronized history.

@@ -107,6 +107,35 @@ describe("AskAiPlugin commands", () => {
     );
   });
 
+  it("warns when a note is too large and confirms the clipboard fallback", async () => {
+    const open = vi.fn();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    const file = { name: "Large.md" };
+    vi.stubGlobal("window", { open });
+    vi.stubGlobal("navigator", { clipboard: { writeText } });
+
+    await loadPlugin({
+      workspace: { getActiveFile: () => file },
+      vault: { cachedRead: vi.fn().mockResolvedValue("x".repeat(6_001)) },
+    });
+
+    findCommand("open-entire-note-in-ai-chat").editorCallback?.(
+      { getSelection: () => "Focused passage" } as Editor,
+      { file } as MarkdownFileInfo,
+    );
+
+    await vi.waitFor(() => expect(open).toHaveBeenCalledOnce());
+    expect(testState.notices).toContain(
+      "This note is too large for automatic insertion. The full note and selected text will be copied; paste them manually in ChatGPT.",
+    );
+    expect(testState.notices).toContain(
+      "Full note and selected text copied. Paste them into ChatGPT, add your question, then send.",
+    );
+    expect(writeText).toHaveBeenCalledWith(
+      expect.stringContaining("Request:\nFocused passage\n\n"),
+    );
+  });
+
   it("reports a vault read failure instead of rejecting silently", async () => {
     vi.stubGlobal("window", { open: vi.fn() });
     vi.stubGlobal("navigator", {

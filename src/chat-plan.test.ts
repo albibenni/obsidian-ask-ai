@@ -39,6 +39,7 @@ describe("buildChatPlan", () => {
       `https://chatgpt.com/?prompt=${encodeURIComponent(plan.draft)}`,
     );
     expect(plan.prefilled).toBe(true);
+    expect(plan.transfer).toBe("url-prefill");
     expect(plan.copyToClipboard).toBe(true);
   });
 
@@ -96,6 +97,7 @@ describe("buildChatPlan", () => {
       });
 
       expect(plan.prefilled).toBe(false);
+      expect(plan.transfer).toBe("clipboard-provider");
       expect(plan.copyToClipboard).toBe(true);
       expect(plan.url).toBe(
         provider === "gemini"
@@ -116,6 +118,7 @@ describe("buildChatPlan", () => {
 
     expect(plan.url).toBe("https://chatgpt.com/");
     expect(plan.prefilled).toBe(false);
+    expect(plan.transfer).toBe("clipboard-size");
     expect(plan.draft).toContain(context);
   });
 

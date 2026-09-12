@@ -6,6 +6,7 @@ const PLAN: ChatPlan = {
   url: "https://chatgpt.com/",
   draft: "File: Note.md\n\nContext:\nText\n\nRequest:\n",
   prefilled: false,
+  transfer: "clipboard-size",
   copyToClipboard: true,
 };
 

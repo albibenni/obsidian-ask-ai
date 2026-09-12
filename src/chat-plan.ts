@@ -4,6 +4,10 @@ const CHAT_PROVIDERS = ["chatgpt", "claude", "gemini", "custom"] as const;
 
 export type ChatProvider = (typeof CHAT_PROVIDERS)[number];
 export type ContextSource = "selection" | "note";
+export type ChatTransfer =
+  | "url-prefill"
+  | "clipboard-size"
+  | "clipboard-provider";
 
 export interface ChatPlanInput {
   provider: ChatProvider;
@@ -18,6 +22,7 @@ export interface ChatPlan {
   url: string;
   draft: string;
   prefilled: boolean;
+  transfer: ChatTransfer;
   copyToClipboard: true;
 }
 
@@ -50,6 +55,7 @@ export function buildChatPlan(input: ChatPlanInput): ChatPlan {
       `${NEW_CHAT_URLS.chatgpt}?prompt=${encodedDraft}`,
       draft,
       true,
+      "url-prefill",
     );
   }
 
@@ -58,10 +64,18 @@ export function buildChatPlan(input: ChatPlanInput): ChatPlan {
       `${NEW_CHAT_URLS.claude}?q=${encodedDraft}`,
       draft,
       true,
+      "url-prefill",
     );
   }
 
-  return clipboardPlan(resolveBaseUrl(input), draft, false);
+  const supportsUrlPrefill =
+    input.provider === "chatgpt" || input.provider === "claude";
+  return clipboardPlan(
+    resolveBaseUrl(input),
+    draft,
+    false,
+    supportsUrlPrefill ? "clipboard-size" : "clipboard-provider",
+  );
 }
 
 function resolveBaseUrl(input: ChatPlanInput): string {
@@ -79,11 +93,13 @@ function clipboardPlan(
   url: string,
   draft: string,
   prefilled: boolean,
+  transfer: ChatTransfer,
 ): ChatPlan {
   return {
     url,
     draft,
     prefilled,
+    transfer,
     copyToClipboard: true,
   };
 }

@@ -70,6 +70,20 @@ export default class AskAiPlugin extends Plugin {
       requestContext,
     });
 
+    const clipboardDescription =
+      source === "note"
+        ? requestContext === ""
+          ? "full note"
+          : "full note and selected text"
+        : "selected text";
+    if (plan.transfer === "clipboard-size") {
+      new Notice(
+        `This ${source} is too large for automatic insertion. The ${clipboardDescription} ` +
+          `will be copied; paste them manually in ${providerDisplayName(settings.provider)}.`,
+        10_000,
+      );
+    }
+
     const result = await openChat(plan, {
       openUrl: (url) => {
         window.open(url, "_blank", "noopener,noreferrer");
@@ -98,6 +112,15 @@ export default class AskAiPlugin extends Plugin {
       new Notice(
         `Opened a new ${providerName} chat with context prefilled. ` +
           "A clipboard fallback is ready.",
+      );
+      return;
+    }
+
+    if (plan.transfer === "clipboard-size") {
+      new Notice(
+        `${capitalize(clipboardDescription)} copied. Paste them into ${providerName}, ` +
+          "add your question, then send.",
+        10_000,
       );
       return;
     }
@@ -143,4 +166,8 @@ function providerDisplayName(provider: AskAiSettings["provider"]): string {
     case "custom":
       return "AI";
   }
+}
+
+function capitalize(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
