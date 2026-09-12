@@ -1,8 +1,8 @@
 {
   "id": "ask-ai",
   "name": "Ask AI",
-  "version": "0.1.5",
-  "minAppVersion": "1.11.4",
+  "version": "0.1.6",
+  "minAppVersion": "1.13.0",
   "description": "Open selected text or an entire note in a new consumer AI chat.",
   "author": "AlbiBenni",
   "authorUrl": "https://github.com/albibenni",
