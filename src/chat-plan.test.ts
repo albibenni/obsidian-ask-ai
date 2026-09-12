@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildChatPlan,
   buildDraft,
-  MAX_URL_CONTEXT_CHARACTERS,
+  isChatProvider,
+  MAX_PREFILL_URL_LENGTH,
 } from "./chat-plan";
 
 describe("buildDraft", () => {
@@ -10,6 +11,12 @@ describe("buildDraft", () => {
     expect(buildDraft("Ideas.md", "Selected words")).toBe(
       "File: Ideas.md\n\nContext:\nSelected words\n\nRequest:\n",
     );
+  });
+});
+
+describe("isChatProvider", () => {
+  it("rejects inherited object property names", () => {
+    expect(isChatProvider("toString")).toBe(false);
   });
 });
 
@@ -68,7 +75,7 @@ describe("buildChatPlan", () => {
     { source: "note" as const, context: "short" },
     {
       source: "selection" as const,
-      context: "x".repeat(MAX_URL_CONTEXT_CHARACTERS + 1),
+      context: "x".repeat(MAX_PREFILL_URL_LENGTH + 1),
     },
   ])("keeps $source content out of the URL", ({ source, context }) => {
     const plan = buildChatPlan({
@@ -81,5 +88,17 @@ describe("buildChatPlan", () => {
     expect(plan.url).toBe("https://chatgpt.com/");
     expect(plan.prefilled).toBe(false);
     expect(plan.draft).toContain(context);
+  });
+
+  it("uses the clipboard when URL encoding pushes a selection over the limit", () => {
+    const plan = buildChatPlan({
+      provider: "claude",
+      source: "selection",
+      fileName: "Emoji.md",
+      context: "😀".repeat(MAX_PREFILL_URL_LENGTH / 2),
+    });
+
+    expect(plan.url).toBe("https://claude.ai/new");
+    expect(plan.prefilled).toBe(false);
   });
 });

@@ -1,5 +1,5 @@
 import { type App, PluginSettingTab, Setting } from "obsidian";
-import type { ChatProvider } from "./chat-plan";
+import { type ChatProvider, isChatProvider } from "./chat-plan";
 import type AskAiPlugin from "./main";
 import { isValidCustomUrl } from "./settings-schema";
 
@@ -49,8 +49,10 @@ export class AskAiSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("How context is transferred")
       .setDesc(
-        "Short selections are prefilled for ChatGPT and Claude. Gemini, custom " +
-          "sites, long selections, and entire notes use the clipboard.",
+        "Short selections are placed in the ChatGPT or Claude URL, so they are " +
+          "transmitted when the page opens—before you press Send—and may remain " +
+          "in browser history. Gemini, custom sites, long selections, and " +
+          "entire notes use the clipboard.",
       );
   }
 
@@ -76,8 +78,4 @@ export class AskAiSettingTab extends PluginSettingTab {
         });
     });
   }
-}
-
-function isChatProvider(value: string): value is ChatProvider {
-  return value in PROVIDER_LABELS;
 }

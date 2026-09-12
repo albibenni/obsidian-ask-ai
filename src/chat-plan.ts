@@ -1,6 +1,8 @@
-export const MAX_URL_CONTEXT_CHARACTERS = 6_000;
+export const MAX_PREFILL_URL_LENGTH = 6_000;
 
-export type ChatProvider = "chatgpt" | "claude" | "gemini" | "custom";
+const CHAT_PROVIDERS = ["chatgpt", "claude", "gemini", "custom"] as const;
+
+export type ChatProvider = (typeof CHAT_PROVIDERS)[number];
 export type ContextSource = "selection" | "note";
 
 export interface ChatPlanInput {
@@ -18,6 +20,10 @@ export interface ChatPlan {
   copyToClipboard: true;
 }
 
+export function isChatProvider(value: string): value is ChatProvider {
+  return CHAT_PROVIDERS.some((provider) => provider === value);
+}
+
 const NEW_CHAT_URLS = {
   chatgpt: "https://chatgpt.com/",
   claude: "https://claude.ai/new",
@@ -30,13 +36,14 @@ export function buildDraft(fileName: string, context: string): string {
 
 export function buildChatPlan(input: ChatPlanInput): ChatPlan {
   const draft = buildDraft(input.fileName, input.context);
+  const encodedDraft = encodeURIComponent(draft);
   const canPrefill =
     input.source === "selection" &&
-    input.context.length <= MAX_URL_CONTEXT_CHARACTERS;
+    encodedDraft.length <= MAX_PREFILL_URL_LENGTH;
 
   if (canPrefill && input.provider === "chatgpt") {
     return clipboardPlan(
-      `${NEW_CHAT_URLS.chatgpt}?prompt=${encodeURIComponent(draft)}`,
+      `${NEW_CHAT_URLS.chatgpt}?prompt=${encodedDraft}`,
       draft,
       true,
     );
@@ -44,7 +51,7 @@ export function buildChatPlan(input: ChatPlanInput): ChatPlan {
 
   if (canPrefill && input.provider === "claude") {
     return clipboardPlan(
-      `${NEW_CHAT_URLS.claude}?q=${encodeURIComponent(draft)}`,
+      `${NEW_CHAT_URLS.claude}?q=${encodedDraft}`,
       draft,
       true,
     );

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_SETTINGS, parseSettings } from "./settings-schema";
+import {
+  DEFAULT_SETTINGS,
+  isValidCustomUrl,
+  parseSettings,
+} from "./settings-schema";
 
 describe("parseSettings", () => {
   it("uses safe defaults when no settings have been saved", () => {
@@ -11,6 +15,17 @@ describe("parseSettings", () => {
       provider: "claude",
       customUrl: "",
     });
+  });
+
+  it("preserves custom provider selection while its URL is being configured", () => {
+    expect(parseSettings({ provider: "custom", customUrl: "" })).toEqual({
+      provider: "custom",
+      customUrl: "",
+    });
+  });
+
+  it("does not treat an empty custom URL as ready to open", () => {
+    expect(isValidCustomUrl("")).toBe(false);
   });
 
   it.each(["javascript:alert(1)", "http://example.com/new", "not a url"])(

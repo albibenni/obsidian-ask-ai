@@ -19,17 +19,18 @@ export default class AskAiPlugin extends Plugin {
     this.addCommand({
       id: "open-selection-in-ai-chat",
       name: "Open selection in AI chat",
-      editorCallback: (editor: Editor) => {
-        const fileName =
-          this.app.workspace.getActiveFile()?.name ?? "Untitled.md";
-        void this.openContext("selection", fileName, editor.getSelection());
+      editorCallback: (editor: Editor, context) => {
+        const fileName = context.file?.name ?? "Untitled.md";
+        this.runSafely(() =>
+          this.openContext("selection", fileName, editor.getSelection()),
+        );
       },
     });
 
     this.addCommand({
       id: "open-entire-note-in-ai-chat",
       name: "Open entire note in AI chat",
-      callback: () => void this.openEntireNote(),
+      callback: () => this.runSafely(() => this.openEntireNote()),
     });
   }
 
@@ -64,12 +65,21 @@ export default class AskAiPlugin extends Plugin {
 
     const result = await openChat(plan, {
       openUrl: (url) => {
-        window.open(url);
+        window.open(url, "_blank", "noopener,noreferrer");
       },
       copyText: (text) => navigator.clipboard.writeText(text),
     });
 
     const providerName = providerDisplayName(settings.provider);
+    if (!result.browserOpened) {
+      new Notice(
+        result.clipboardCopied
+          ? `Could not open ${providerName}. The context was copied.`
+          : `Could not open ${providerName}, and clipboard access failed.`,
+      );
+      return;
+    }
+
     if (!result.clipboardCopied) {
       new Notice(
         `Opened a new ${providerName} chat, but clipboard access failed.`,
@@ -97,11 +107,21 @@ export default class AskAiPlugin extends Plugin {
       !isValidCustomUrl(this.settings.customUrl)
     ) {
       new Notice(
-        "The custom chat URL is invalid. Opened ChatGPT as a safe fallback.",
+        "The custom chat URL is invalid. Using ChatGPT as a safe fallback.",
       );
       return { ...DEFAULT_SETTINGS };
     }
     return this.settings;
+  }
+
+  private runSafely(operation: () => Promise<void>): void {
+    void operation().catch((error: unknown) => {
+      console.error("Ask AI failed to prepare the chat:", error);
+      new Notice(
+        "Ask AI could not prepare the chat. " +
+          "Check the developer console for details.",
+      );
+    });
   }
 }
 

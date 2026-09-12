@@ -8,11 +8,14 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc --noEmit && node esbuild.config.mjs production",
+    "release": "node release.mjs",
+    "version": "node version-bump.mjs && node verify-release.mjs && pnpm run format && git add manifest.json versions.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "check": "pnpm run lint && pnpm run test && pnpm run build",
+    "check:metadata": "node verify-release.mjs",
+    "check": "pnpm run lint && pnpm run test && pnpm run check:metadata && pnpm run build",
     "prepare": "husky"
   },
   "keywords": [
@@ -34,10 +37,6 @@
   "dependencies": {
     "zod": "^4.4.3"
   },
-  "onlyBuiltDependencies": [
-    "esbuild"
-  ],
-  "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=24"
   }

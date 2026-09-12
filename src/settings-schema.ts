@@ -11,31 +11,18 @@ export const DEFAULT_SETTINGS: AskAiSettings = {
   customUrl: "",
 };
 
-const SettingsSchema = z
-  .object({
-    provider: z
-      .enum(["chatgpt", "claude", "gemini", "custom"])
-      .default(DEFAULT_SETTINGS.provider),
-    customUrl: z.string().trim().default(DEFAULT_SETTINGS.customUrl),
-  })
-  .superRefine((settings, context) => {
-    if (settings.provider !== "custom") {
-      return;
-    }
-
-    try {
-      const url = new URL(settings.customUrl);
-      if (url.protocol !== "https:") {
-        throw new Error("Custom AI chat URLs must use HTTPS");
-      }
-    } catch {
-      context.addIssue({
-        code: "custom",
-        path: ["customUrl"],
-        message: "Enter a valid HTTPS new-chat URL",
-      });
-    }
-  });
+const SettingsSchema = z.object({
+  provider: z
+    .enum(["chatgpt", "claude", "gemini", "custom"])
+    .default(DEFAULT_SETTINGS.provider),
+  customUrl: z
+    .string()
+    .trim()
+    .refine((value) => value === "" || isHttpsUrl(value), {
+      message: "Enter a valid HTTPS new-chat URL",
+    })
+    .default(DEFAULT_SETTINGS.customUrl),
+});
 
 export function parseSettings(input: unknown): AskAiSettings {
   const result = SettingsSchema.safeParse(input ?? {});
@@ -43,8 +30,13 @@ export function parseSettings(input: unknown): AskAiSettings {
 }
 
 export function isValidCustomUrl(value: string): boolean {
-  return SettingsSchema.safeParse({
-    provider: "custom",
-    customUrl: value,
-  }).success;
+  return value.trim() !== "" && isHttpsUrl(value);
+}
+
+function isHttpsUrl(value: string): boolean {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
 }

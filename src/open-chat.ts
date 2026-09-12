@@ -6,6 +6,7 @@ export interface ChatBoundaries {
 }
 
 export interface OpenChatResult {
+  browserOpened: boolean;
   clipboardCopied: boolean;
 }
 
@@ -13,12 +14,25 @@ export async function openChat(
   plan: ChatPlan,
   boundaries: ChatBoundaries,
 ): Promise<OpenChatResult> {
-  boundaries.openUrl(plan.url);
-
+  let clipboardResult: Promise<boolean>;
   try {
-    await boundaries.copyText(plan.draft);
-    return { clipboardCopied: true };
+    clipboardResult = boundaries.copyText(plan.draft).then(
+      () => true,
+      () => false,
+    );
   } catch {
-    return { clipboardCopied: false };
+    clipboardResult = Promise.resolve(false);
   }
+
+  let browserOpened = true;
+  try {
+    boundaries.openUrl(plan.url);
+  } catch {
+    browserOpened = false;
+  }
+
+  return {
+    browserOpened,
+    clipboardCopied: await clipboardResult,
+  };
 }
