@@ -12,6 +12,12 @@ describe("buildDraft", () => {
       "File: Ideas.md\n\nContext:\nSelected words\n\nRequest:\n",
     );
   });
+
+  it("repeats the focused selection in the request after the full note", () => {
+    expect(buildDraft("Ideas.md", "Complete note", "Focused passage")).toBe(
+      "File: Ideas.md\n\nContext:\nComplete note\n\nRequest:\nFocused passage\n\n",
+    );
+  });
 });
 
 describe("isChatProvider", () => {

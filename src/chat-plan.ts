@@ -10,6 +10,7 @@ export interface ChatPlanInput {
   source: ContextSource;
   fileName: string;
   context: string;
+  requestContext?: string;
   customUrl?: string;
 }
 
@@ -30,12 +31,17 @@ const NEW_CHAT_URLS = {
   gemini: "https://gemini.google.com/app",
 } as const;
 
-export function buildDraft(fileName: string, context: string): string {
-  return `File: ${fileName}\n\nContext:\n${context}\n\nRequest:\n`;
+export function buildDraft(
+  fileName: string,
+  context: string,
+  requestContext = "",
+): string {
+  const request = requestContext === "" ? "" : `${requestContext}\n\n`;
+  return `File: ${fileName}\n\nContext:\n${context}\n\nRequest:\n${request}`;
 }
 
 export function buildChatPlan(input: ChatPlanInput): ChatPlan {
-  const draft = buildDraft(input.fileName, input.context);
+  const draft = buildDraft(input.fileName, input.context, input.requestContext);
   const encodedDraft = encodeURIComponent(draft);
   const canPrefill = encodedDraft.length <= MAX_PREFILL_URL_LENGTH;
 

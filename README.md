@@ -8,7 +8,7 @@ it does not require an API key or developer subscription.
 
 - **Open selection in AI chat** includes the active filename and selected text.
 - **Open entire note in AI chat** includes the active filename and full Markdown
-  content.
+  content, then repeats the current selection under `Request:`.
 
 The draft always ends with `Request:`. Complete the request in the AI chat,
 review it, and send it yourself. Ask AI never submits a message automatically.

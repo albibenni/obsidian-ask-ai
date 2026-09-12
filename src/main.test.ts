@@ -81,6 +81,33 @@ describe("AskAiPlugin commands", () => {
     expect(decodeURIComponent(openedUrl)).toContain("Focused selection");
   });
 
+  it("puts the active selection in Request after the complete note", async () => {
+    const open = vi.fn();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    const file = { name: "Ideas.md" };
+    vi.stubGlobal("window", { open });
+    vi.stubGlobal("navigator", { clipboard: { writeText } });
+
+    await loadPlugin({
+      workspace: {
+        activeEditor: {
+          file,
+          editor: { getSelection: () => "Focused passage" },
+        },
+        getActiveFile: () => file,
+      },
+      vault: { cachedRead: vi.fn().mockResolvedValue("Complete note") },
+    });
+
+    findCommand("open-entire-note-in-ai-chat").callback?.();
+
+    await vi.waitFor(() => expect(open).toHaveBeenCalledOnce());
+    const openedUrl = decodeURIComponent(String(open.mock.calls[0]?.[0]));
+    expect(openedUrl).toContain(
+      "Context:\nComplete note\n\nRequest:\nFocused passage\n\n",
+    );
+  });
+
   it("reports a vault read failure instead of rejecting silently", async () => {
     vi.stubGlobal("window", { open: vi.fn() });
     vi.stubGlobal("navigator", {

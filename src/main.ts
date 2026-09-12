@@ -39,20 +39,23 @@ export default class AskAiPlugin extends Plugin {
   }
 
   private async openEntireNote(): Promise<void> {
-    const file = this.app.workspace.getActiveFile();
+    const activeEditor = this.app.workspace.activeEditor;
+    const file = activeEditor?.file ?? this.app.workspace.getActiveFile();
+    const selectedText = activeEditor?.editor?.getSelection() ?? "";
     if (!file) {
-      await this.openContext("note", "Untitled.md", "");
+      await this.openContext("note", "Untitled.md", "", selectedText);
       return;
     }
 
     const context = await this.app.vault.cachedRead(file);
-    await this.openContext("note", file.name, context);
+    await this.openContext("note", file.name, context, selectedText);
   }
 
   private async openContext(
     source: ContextSource,
     fileName: string,
     context: string,
+    requestContext = "",
   ): Promise<void> {
     const settings = this.validRuntimeSettings();
     const plan = buildChatPlan({
@@ -61,6 +64,7 @@ export default class AskAiPlugin extends Plugin {
       source,
       fileName,
       context,
+      requestContext,
     });
 
     const result = await openChat(plan, {
