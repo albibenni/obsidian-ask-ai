@@ -90,16 +90,15 @@ describe("AskAiPlugin commands", () => {
 
     await loadPlugin({
       workspace: {
-        activeEditor: {
-          file,
-          editor: { getSelection: () => "Focused passage" },
-        },
         getActiveFile: () => file,
       },
       vault: { cachedRead: vi.fn().mockResolvedValue("Complete note") },
     });
 
-    findCommand("open-entire-note-in-ai-chat").callback?.();
+    findCommand("open-entire-note-in-ai-chat").editorCallback?.(
+      { getSelection: () => "Focused passage" } as Editor,
+      { file } as MarkdownFileInfo,
+    );
 
     await vi.waitFor(() => expect(open).toHaveBeenCalledOnce());
     const openedUrl = decodeURIComponent(String(open.mock.calls[0]?.[0]));
@@ -122,7 +121,10 @@ describe("AskAiPlugin commands", () => {
       },
     });
 
-    findCommand("open-entire-note-in-ai-chat").callback?.();
+    findCommand("open-entire-note-in-ai-chat").editorCallback?.(
+      { getSelection: () => "Focused passage" } as Editor,
+      { file: { name: "Unreadable.md" } } as MarkdownFileInfo,
+    );
 
     await vi.waitFor(() =>
       expect(testState.notices).toContain(
