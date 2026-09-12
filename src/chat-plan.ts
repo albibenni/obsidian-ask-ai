@@ -37,9 +37,7 @@ export function buildDraft(fileName: string, context: string): string {
 export function buildChatPlan(input: ChatPlanInput): ChatPlan {
   const draft = buildDraft(input.fileName, input.context);
   const encodedDraft = encodeURIComponent(draft);
-  const canPrefill =
-    input.source === "selection" &&
-    encodedDraft.length <= MAX_PREFILL_URL_LENGTH;
+  const canPrefill = encodedDraft.length <= MAX_PREFILL_URL_LENGTH;
 
   if (canPrefill && input.provider === "chatgpt") {
     return clipboardPlan(

@@ -50,6 +50,34 @@ describe("buildChatPlan", () => {
     expect(plan.prefilled).toBe(true);
   });
 
+  it("prefills a whole note when it fits in a ChatGPT URL", () => {
+    const plan = buildChatPlan({
+      provider: "chatgpt",
+      source: "note",
+      fileName: "Ideas.md",
+      context: "A short complete note",
+    });
+
+    expect(plan.url).toBe(
+      `https://chatgpt.com/?prompt=${encodeURIComponent(plan.draft)}`,
+    );
+    expect(plan.prefilled).toBe(true);
+  });
+
+  it("prefills a whole note when it fits in a Claude URL", () => {
+    const plan = buildChatPlan({
+      provider: "claude",
+      source: "note",
+      fileName: "Ideas.md",
+      context: "A short complete note",
+    });
+
+    expect(plan.url).toBe(
+      `https://claude.ai/new?q=${encodeURIComponent(plan.draft)}`,
+    );
+    expect(plan.prefilled).toBe(true);
+  });
+
   it.each(["gemini", "custom"] as const)(
     "uses clipboard-only transfer for %s",
     (provider) => {
@@ -71,16 +99,11 @@ describe("buildChatPlan", () => {
     },
   );
 
-  it.each([
-    { source: "note" as const, context: "short" },
-    {
-      source: "selection" as const,
-      context: "x".repeat(MAX_PREFILL_URL_LENGTH + 1),
-    },
-  ])("keeps $source content out of the URL", ({ source, context }) => {
+  it("keeps oversized content out of the URL", () => {
+    const context = "x".repeat(MAX_PREFILL_URL_LENGTH + 1);
     const plan = buildChatPlan({
       provider: "chatgpt",
-      source,
+      source: "note",
       fileName: "Private.md",
       context,
     });

@@ -18,17 +18,17 @@ review it, and send it yourself. Ask AI never submits a message automatically.
 Choose ChatGPT, Claude, Gemini, or a custom HTTPS new-chat URL in the plugin
 settings.
 
-- ChatGPT and Claude receive short selections through an unsent URL-prefilled
-  draft when the resulting encoded prompt is no longer than 6,000 URL
-  characters. The same draft is copied as a fallback.
+- ChatGPT and Claude receive short selections and notes through an unsent
+  URL-prefilled draft when the resulting encoded prompt is no longer than 6,000
+  URL characters. The same draft is copied as a fallback.
 - Gemini and custom chat sites use the clipboard because they do not offer a
   reliable external prefill contract.
-- Longer selections and entire notes always use the clipboard, keeping large or
-  sensitive note content out of browser history URLs.
+- Longer selections and notes use the clipboard, keeping large content out of
+  browser history URLs.
 
 URL-prefilled text is transmitted to ChatGPT or Claude as soon as the browser
 opens, before you press Send, and may remain in browser or synchronized history.
-Use the clipboard-only providers for sensitive selections.
+Use the clipboard-only providers for sensitive content.
 
 Every command opens a new chat page in the system browser. For clipboard-only
 transfers, paste the draft into the new chat before editing the `Request:` field.

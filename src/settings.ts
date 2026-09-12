@@ -49,10 +49,10 @@ export class AskAiSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("How context is transferred")
       .setDesc(
-        "Short selections are placed in the ChatGPT or Claude URL, so they are " +
+        "Short selections and notes are placed in the ChatGPT or Claude URL, so they are " +
           "transmitted when the page opens—before you press Send—and may remain " +
-          "in browser history. Gemini, custom sites, long selections, and " +
-          "entire notes use the clipboard.",
+          "in browser history. Gemini, custom sites, and longer content use " +
+          "the clipboard.",
       );
   }
 
