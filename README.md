@@ -4,6 +4,8 @@ Ask AI is a mobile- and desktop-compatible Obsidian plugin that opens note
 context in a new consumer AI chat. It uses the chat websites you already use;
 it does not require an API key or developer subscription.
 
+Requires Obsidian 1.13.0 or newer.
+
 ## Commands
 
 - **Open selection in AI chat** includes the active filename and selected text.
@@ -36,6 +38,8 @@ Every command opens a new chat page in the system browser. For clipboard-only
 transfers, paste the draft into the new chat before editing the `Request:` field.
 Whole notes are transferred as Markdown text rather than automatic attachments,
 which consumer chat sites do not expose reliably across desktop and mobile.
+Ask AI only writes prepared drafts to the clipboard; it never reads existing
+clipboard content.
 
 ## Development
 

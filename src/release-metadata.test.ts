@@ -1,5 +1,11 @@
 import { spawnSync } from "node:child_process";
-import { copyFileSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +14,9 @@ import { afterEach, describe, expect, it } from "vitest";
 const temporaryDirectories: string[] = [];
 const verifierPath = fileURLToPath(
   new URL("../verify-release.mjs", import.meta.url),
+);
+const versionBumpPath = fileURLToPath(
+  new URL("../version-bump.mjs", import.meta.url),
 );
 
 afterEach(() => {
@@ -32,6 +41,25 @@ describe("release metadata verification", () => {
     expect(result.stderr).toContain(
       "Release tag 9.9.9 does not match version 1.2.3",
     );
+  });
+
+  it("raises the minimum Obsidian version only for the next release", () => {
+    const directory = createReleaseFixture();
+    const result = spawnSync(process.execPath, [versionBumpPath], {
+      cwd: directory,
+      encoding: "utf8",
+      env: { ...process.env, npm_package_version: "1.2.4" },
+    });
+
+    expect(result.status).toBe(0);
+    expect(readJson(join(directory, "manifest.json"))).toMatchObject({
+      version: "1.2.4",
+      minAppVersion: "1.13.0",
+    });
+    expect(readJson(join(directory, "versions.json"))).toEqual({
+      "1.2.3": "1.11.4",
+      "1.2.4": "1.13.0",
+    });
   });
 });
 
@@ -61,4 +89,8 @@ function runVerifier(directory: string, tag: string) {
 
 function writeJson(path: string, value: object): void {
   writeFileSync(path, `${JSON.stringify(value)}\n`);
+}
+
+function readJson(path: string): unknown {
+  return JSON.parse(readFileSync(path, "utf8"));
 }

@@ -1,5 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
+const MINIMUM_OBSIDIAN_VERSION = "1.13.0";
+
 const targetVersion = process.env.npm_package_version;
 
 if (
@@ -15,6 +17,7 @@ if (typeof manifest.minAppVersion !== "string") {
 }
 
 manifest.version = targetVersion;
+manifest.minAppVersion = MINIMUM_OBSIDIAN_VERSION;
 writeJson("manifest.json", manifest);
 
 const versions = readJson("versions.json");
