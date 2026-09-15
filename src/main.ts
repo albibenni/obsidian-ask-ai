@@ -1,4 +1,4 @@
-import { type Editor, Notice, Plugin, type TFile } from "obsidian";
+import { Notice, Plugin, type TFile } from "obsidian";
 import { buildChatPlan, type ContextSource } from "./chat-plan";
 import { openChat } from "./open-chat";
 import { AskAiSettingTab } from "./settings";
@@ -19,7 +19,11 @@ export default class AskAiPlugin extends Plugin {
     this.addCommand({
       id: "open-selection-in-ai-chat",
       name: "Open selection in AI chat",
-      editorCallback: (editor: Editor, context) => {
+      callback: () => {
+        const context = this.app.workspace.activeEditor;
+        const editor = context?.editor;
+        if (!editor) return;
+
         const fileName = context.file?.name ?? "Untitled.md";
         this.runSafely(() =>
           this.openContext("selection", fileName, editor.getSelection()),
@@ -30,7 +34,11 @@ export default class AskAiPlugin extends Plugin {
     this.addCommand({
       id: "open-entire-note-in-ai-chat",
       name: "Open entire note in AI chat",
-      editorCallback: (editor: Editor, context) => {
+      callback: () => {
+        const context = this.app.workspace.activeEditor;
+        const editor = context?.editor;
+        if (!editor) return;
+
         const file = context.file ?? this.app.workspace.getActiveFile();
         this.runSafely(() => this.openEntireNote(file, editor.getSelection()));
       },

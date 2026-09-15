@@ -1,10 +1,4 @@
-import type {
-  App,
-  Command,
-  Editor,
-  MarkdownFileInfo,
-  PluginManifest,
-} from "obsidian";
+import type { App, Command, Editor, PluginManifest } from "obsidian";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const testState = vi.hoisted(() => ({
@@ -56,24 +50,40 @@ describe("AskAiPlugin commands", () => {
     vi.unstubAllGlobals();
   });
 
-  it("uses the editor callback file with its selected text", async () => {
+  it("registers both actions as global commands", async () => {
+    await loadPlugin({
+      workspace: {
+        activeEditor: null,
+        getActiveFile: () => null,
+      },
+      vault: { cachedRead: vi.fn() },
+    });
+
+    expect(findCommand("open-selection-in-ai-chat").callback).toBeTypeOf(
+      "function",
+    );
+    expect(findCommand("open-entire-note-in-ai-chat").callback).toBeTypeOf(
+      "function",
+    );
+  });
+
+  it("uses the active editor file with its selected text", async () => {
     const open = vi.fn();
     const writeText = vi.fn().mockResolvedValue(undefined);
+    const editor = { getSelection: () => "Focused selection" } as Editor;
     vi.stubGlobal("window", { open });
     vi.stubGlobal("navigator", { clipboard: { writeText } });
 
     await loadPlugin({
       workspace: {
+        activeEditor: { editor, file: { name: "Focused-pane.md" } },
         getActiveFile: () => ({ name: "Different-pane.md" }),
       },
       vault: { cachedRead: vi.fn() },
     });
     const command = findCommand("open-selection-in-ai-chat");
 
-    command.editorCallback?.(
-      { getSelection: () => "Focused selection" } as Editor,
-      { file: { name: "Focused-pane.md" } } as MarkdownFileInfo,
-    );
+    command.callback?.();
 
     await vi.waitFor(() => expect(open).toHaveBeenCalledOnce());
     const openedUrl = String(open.mock.calls[0]?.[0]);
@@ -90,15 +100,16 @@ describe("AskAiPlugin commands", () => {
 
     await loadPlugin({
       workspace: {
+        activeEditor: {
+          editor: { getSelection: () => "Focused passage" },
+          file,
+        },
         getActiveFile: () => file,
       },
       vault: { cachedRead: vi.fn().mockResolvedValue("Complete note") },
     });
 
-    findCommand("open-entire-note-in-ai-chat").editorCallback?.(
-      { getSelection: () => "Focused passage" } as Editor,
-      { file } as MarkdownFileInfo,
-    );
+    findCommand("open-entire-note-in-ai-chat").callback?.();
 
     await vi.waitFor(() => expect(open).toHaveBeenCalledOnce());
     const openedUrl = decodeURIComponent(String(open.mock.calls[0]?.[0]));
@@ -115,14 +126,17 @@ describe("AskAiPlugin commands", () => {
     vi.stubGlobal("navigator", { clipboard: { writeText } });
 
     await loadPlugin({
-      workspace: { getActiveFile: () => file },
+      workspace: {
+        activeEditor: {
+          editor: { getSelection: () => "Focused passage" },
+          file,
+        },
+        getActiveFile: () => file,
+      },
       vault: { cachedRead: vi.fn().mockResolvedValue("x".repeat(6_001)) },
     });
 
-    findCommand("open-entire-note-in-ai-chat").editorCallback?.(
-      { getSelection: () => "Focused passage" } as Editor,
-      { file } as MarkdownFileInfo,
-    );
+    findCommand("open-entire-note-in-ai-chat").callback?.();
 
     await vi.waitFor(() => expect(open).toHaveBeenCalledOnce());
     expect(testState.notices).toContain(
@@ -144,16 +158,19 @@ describe("AskAiPlugin commands", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
 
     await loadPlugin({
-      workspace: { getActiveFile: () => ({ name: "Unreadable.md" }) },
+      workspace: {
+        activeEditor: {
+          editor: { getSelection: () => "Focused passage" },
+          file: { name: "Unreadable.md" },
+        },
+        getActiveFile: () => ({ name: "Unreadable.md" }),
+      },
       vault: {
         cachedRead: vi.fn().mockRejectedValue(new Error("Read failed")),
       },
     });
 
-    findCommand("open-entire-note-in-ai-chat").editorCallback?.(
-      { getSelection: () => "Focused passage" } as Editor,
-      { file: { name: "Unreadable.md" } } as MarkdownFileInfo,
-    );
+    findCommand("open-entire-note-in-ai-chat").callback?.();
 
     await vi.waitFor(() =>
       expect(testState.notices).toContain(
