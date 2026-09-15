@@ -1,6 +1,6 @@
 {
   "name": "ask-ai",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "description": "Open Obsidian note context in a new consumer AI chat",
   "main": "main.js",
   "type": "module",
